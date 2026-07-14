@@ -1,138 +1,78 @@
-import streamlit as st
 import os
 import base64
-import mimetypes
+import streamlit as st
+from movies_data import MOVIES
+from nav import render_nav
+
+st.set_page_config(page_title="Фильмы", layout="wide")
+
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
 
-st.set_page_config(
-    page_title="FILMS | Фильмы",
-    layout="wide"
-)
+def asset_path(relative_path: str) -> str:
+    return os.path.join(BASE_DIR, relative_path)
 
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-CSS_PATH = os.path.join(BASE_DIR, "..", "style.css")
+def load_css():
+    css_path = os.path.join(BASE_DIR, "style.css")
+    with open(css_path, encoding="utf-8") as f:
+        st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 
-with open(
-    CSS_PATH,
-    encoding="utf-8"
-) as file:
+def set_background(image_relative_path: str):
+    """Ставит затемнённую картинку фоном на всё приложение"""
+    image_path = asset_path(image_relative_path)
+    with open(image_path, "rb") as f:
+        encoded = base64.b64encode(f.read()).decode()
 
+    ext = image_relative_path.split(".")[-1]
     st.markdown(
-        f"<style>{file.read()}</style>",
-        unsafe_allow_html=True
+        f"""
+        <style>
+        .stApp {{
+            background-image: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)),
+                               url(data:image/{ext};base64,{encoded});
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+        }}
+        </style>
+        """,
+        unsafe_allow_html=True,
     )
 
 
-
-def get_image_base64(path):
-    with open(path, "rb") as f:
-        return base64.b64encode(f.read()).decode()
-
-
-
-def get_mime_type(path):
-    mime_type, _ = mimetypes.guess_type(path)
-    return mime_type or "image/jpeg"
-
-
-
-st.markdown(
-"""
-<div class="movies-title">
-<h1>
-Фильмы
-</h1>
-</div>
-""",
-unsafe_allow_html=True
-)
-
-
-
-movies = [
-
-
-{
-"name":"Аватар",
-"image":"assets/avatar.jpeg"
-},
-
-
-{
-"name":"Начало",
-"image":"assets/inception.jpg"
-},
-
-
-{
-"name":"Голодные игры",
-"image":"assets/Hunger.webp"
+MOVIE_PAGES = {
+    "avatar": "pages/Аватар.py",
+    "inception": "pages/Начало.py",
+    "hungergames": "pages/Голодные_игры.py",
 }
 
-]
 
+load_css()
 
+render_nav()
 
-for movie in movies:
+st.markdown(
+    "<h1 style='color: white; text-align: center; margin-top: 1rem;'>Фильмы</h1>",
+    unsafe_allow_html=True,
+)
 
+st.markdown("<div class='movie-spacer'></div>", unsafe_allow_html=True)
 
-    left, right = st.columns(
-        [2,1]
-    )
+cols = st.columns(len(MOVIES))
 
-
-    with left:
-
-
+for col, (movie_key, movie) in zip(cols, MOVIES.items()):
+    with col:
+        st.image(asset_path(movie["poster"]), use_container_width=True)
         st.markdown(
-        f"""
-        <div class="film-info">
-
-        <h2>
-        {movie["name"]}
-        </h2>
-
-        </div>
-        """,
-        unsafe_allow_html=True
+            f"<h3 style='color: white;'>{movie['title']}</h3>",
+            unsafe_allow_html=True,
+        )
+        st.markdown(
+            f"<p style='color: #cccccc;'>{movie['short_description']}</p>",
+            unsafe_allow_html=True,
         )
 
-
-        if st.button(
-            "Подробнее",
-            key=f"details_{movie['name']}"
-        ):
-
-            st.session_state["selected_movie"] = movie["name"]
-            st.switch_page("pages/movie_details.py")
-
-
-
-    with right:
-
-
-        img_path = os.path.join(BASE_DIR, "..", movie["image"])
-
-
-        if os.path.exists(img_path):
-
-            img_base64 = get_image_base64(img_path)
-            mime_type = get_mime_type(img_path)
-
-            st.markdown(
-            f"""
-            <div class="film-poster">
-                <img src="data:{mime_type};base64,{img_base64}">
-            </div>
-            """,
-            unsafe_allow_html=True
-            )
-
-        else:
-
-            st.error(f"Картинка не найдена: {img_path}")
-
-
-    st.write("")
+        if st.button("Подробнее", key=f"details_{movie_key}", use_container_width=True):
+            st.switch_page(MOVIE_PAGES[movie_key])

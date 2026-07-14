@@ -1,3 +1,4 @@
+
 import streamlit as st
 import os
 import requests
@@ -41,7 +42,7 @@ if not cookies.ready():
 if cookies.get("access_token"):
     st.session_state["access_token"] = cookies.get("access_token")
     st.session_state["logged_in"] = True
-    st.switch_page("pages/Профиль.py")
+    st.switch_page("pages/Главная.py")
 
 
 
@@ -194,7 +195,7 @@ with st.container():
                                     st.success(
                                     "Аккаунт создан!"
                                 )
-                                st.switch_page("pages/Профиль.py")
+                                st.switch_page("pages/Главная.py")
 
                             else:
                                 st.error(
@@ -242,4 +243,4 @@ col1, col2, col3 = st.columns([1, 1, 1])
 
 with col2:
     if st.button("Перейти к входу", use_container_width=True):
-        st.switch_page("pages/login.py")
+        st.switch_page("pages/Вход.py")

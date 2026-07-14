@@ -1,189 +1,157 @@
-import streamlit as st
 import os
-import json
-from datetime import datetime
+import requests
+import streamlit as st
 from utils import load_css, render_nav
+from streamlit_cookies_manager import EncryptedCookieManager
 
+st.set_page_config(page_title="FILMS | Отзывы", layout="wide")
 
-st.set_page_config(
-    page_title="FILMS | Отзывы",
-    layout="wide"
-)
-
-
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-load_css(BASE_DIR, os.path.join("..", "style.css"))
-
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+load_css(BASE_DIR, "style.css")
 render_nav("Отзывы")
 
+API_URL = "http://localhost:8000"  # проверь, что совпадает с твоим реальным адресом
 
-REVIEWS_PATH = os.path.join(BASE_DIR, "..", "reviews.json")
-
-MOVIES = ["Аватар", "Начало", "Голодные игры"]
-
-AVATAR_COLORS = ["#FF6B6B", "#4ECDC4", "#556FB5", "#F7B801", "#9B59B6", "#2ECC71"]
-
-
-
-def load_reviews():
-
-    if not os.path.exists(REVIEWS_PATH):
-        return []
-
-    with open(REVIEWS_PATH, encoding="utf-8") as file:
-        return json.load(file)
-
-
-
-def save_reviews(reviews):
-
-    with open(REVIEWS_PATH, "w", encoding="utf-8") as file:
-        json.dump(reviews, file, ensure_ascii=False, indent=2)
-
-
-
-def get_avatar_color(name):
-
-    index = sum(ord(ch) for ch in name) % len(AVATAR_COLORS)
-    return AVATAR_COLORS[index]
-
-
-
-st.markdown(
-"""
-<div class="movies-title">
-<h1>ОТЗЫВЫ</h1>
-<p>Фильмы, которые остаются в памяти навсегда</p>
-</div>
-""",
-unsafe_allow_html=True
+cookies = EncryptedCookieManager(
+    prefix="films_app_",
+    password="замени_на_свой_секретный_ключ"
 )
+if not cookies.ready():
+    st.stop()
+
+token = st.session_state.get("access_token") or cookies.get("access_token")
 
 
-reviews = load_reviews()
-
-
-
-# --- форма добавления отзыва ---
-
-with st.container():
-
-    st.markdown('<div class="form-card">', unsafe_allow_html=True)
-
-    st.markdown('<h3 class="form-title">✍️ Оставить отзыв</h3>', unsafe_allow_html=True)
-
-    with st.form("add_review", clear_on_submit=True):
-
-        movie = st.selectbox("Фильм", MOVIES)
-
-        col_a, col_b = st.columns(2)
-
-        with col_a:
-            name = st.text_input("Ваше имя", placeholder="Введите имя")
-
-        with col_b:
-            rating = st.slider("Оценка", min_value=1, max_value=5, value=5)
-
-        text = st.text_area("Ваш отзыв", placeholder="Поделитесь впечатлениями о фильме")
-
-        submit = st.form_submit_button("Отправить отзыв")
-
-        if submit:
-
-            if not name or not text:
-                st.error("Заполните все поля")
-
-            else:
-                reviews.append({
-                    "movie": movie,
-                    "name": name,
-                    "rating": rating,
-                    "text": text,
-                    "date": datetime.now().strftime("%d.%m.%Y")
-                })
-
-                save_reviews(reviews)
-                st.success("Спасибо за отзыв! 🎬")
-                st.rerun()
-
-    st.markdown('</div>', unsafe_allow_html=True)
-
-
-st.write("")
-st.write("")
-
-
-
-# --- отзывы, сгруппированные по фильму ---
-
-if not reviews:
-
-    st.markdown(
+# --- Заголовок ---
+st.markdown(
     """
-    <div class="empty-state">
-    <span class="empty-icon">🎥</span>
-    <p>Пока нет отзывов. Будьте первым, кто поделится впечатлением!</p>
+    <div class="movies-title">
+        <h1>ОТЗЫВЫ</h1>
+        <p>Поделитесь впечатлениями о любимых фильмах</p>
     </div>
     """,
-    unsafe_allow_html=True
+    unsafe_allow_html=True,
+)
+
+st.markdown("<div class='movie-spacer'></div>", unsafe_allow_html=True)
+
+
+# --- Получаем список фильмов с backend (для выбора film_id) ---
+films_by_title = {}
+try:
+    films_response = requests.get(f"{API_URL}/films", timeout=10)
+    if films_response.status_code == 200:
+        films_list = films_response.json()
+        films_by_title = {film["title"]: film["id"] for film in films_list}
+except requests.exceptions.RequestException:
+    pass
+
+
+# --- Форма добавления отзыва ---
+if not token:
+    st.info("Войдите в аккаунт, чтобы оставить отзыв.")
+    if st.button("Перейти к входу"):
+        st.switch_page("pages/Вход.py")
+
+elif not films_by_title:
+    st.warning(
+        "Не удалось загрузить список фильмов для отзыва. "
+        "Проверьте, что backend запущен и эндпоинт /films доступен."
     )
 
 else:
+    with st.container():
+        st.markdown("<div class='form-card'>", unsafe_allow_html=True)
 
-    for movie in MOVIES:
+        with st.form("add_review", clear_on_submit=True):
+            st.markdown("### Оставить отзыв")
 
-        movie_reviews = [r for r in reviews if r.get("movie") == movie]
+            selected_title = st.selectbox(
+                "Выберите фильм",
+                options=list(films_by_title.keys())
+            )
 
-        if not movie_reviews:
-            continue
+            rating = st.slider(
+                "Оценка",
+                min_value=1,
+                max_value=10,
+                value=8
+            )
 
-        avg_rating = sum(r["rating"] for r in movie_reviews) / len(movie_reviews)
-        full_stars = round(avg_rating)
-        avg_stars = "★" * full_stars + "☆" * (5 - full_stars)
+            text = st.text_area(
+                "Ваш отзыв",
+                placeholder="Расскажите, что вам понравилось или нет...",
+                height=120
+            )
 
-        rating_class = "rating-high" if avg_rating >= 4 else "rating-mid" if avg_rating >= 2.5 else "rating-low"
+            submitted = st.form_submit_button("Опубликовать отзыв")
 
-        st.markdown(
-        f"""
-        <div class="movie-review-header">
-            <div class="movie-review-title">
-                <h2>{movie}</h2>
-                <span class="review-count">{len(movie_reviews)} отзыв(ов)</span>
-            </div>
-            <div class="avg-badge {rating_class}">
-                <span class="avg-stars">{avg_stars}</span>
-                <span class="avg-number">{avg_rating:.1f}</span>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True
-        )
+            if submitted:
+                if not text:
+                    st.error("Напишите текст отзыва")
+                else:
+                    film_id = films_by_title[selected_title]
 
-        cols = st.columns(min(len(movie_reviews), 3))
+                    try:
+                        response = requests.post(
+                            f"{API_URL}/reviews",
+                            json={
+                                "film_id": film_id,
+                                "rating": rating,
+                                "text": text,
+                            },
+                            headers={"Authorization": f"Bearer {token}"},
+                            timeout=10,
+                        )
 
-        for idx, review in enumerate(reversed(movie_reviews)):
+                        if response.status_code in (200, 201):
+                            st.success("Отзыв опубликован!")
+                            st.rerun()
+                        elif response.status_code == 401:
+                            st.error("Сессия истекла, войдите заново")
+                        else:
+                            detail = response.json().get("detail", "Неизвестная ошибка")
+                            st.error(f"Ошибка: {detail}")
 
-            stars = "★" * review["rating"] + "☆" * (5 - review["rating"])
-            initial = review["name"][0].upper()
-            color = get_avatar_color(review["name"])
+                    except requests.exceptions.RequestException:
+                        st.error("Не удалось подключиться к серверу")
 
-            with cols[idx % len(cols)]:
+        st.markdown("</div>", unsafe_allow_html=True)
 
-                st.markdown(
-                f"""<div class="review-card">
-                    <div class="review-card-top">
-                        <div class="review-avatar" style="background:{color};">{initial}</div>
-                        <div class="review-meta">
-                            <span class="review-name">{review["name"]}</span>
-                            <span class="review-date">{review["date"]}</span>
-                        </div>
+st.markdown("<div class='movie-spacer'></div>", unsafe_allow_html=True)
+
+
+# --- Список отзывов ---
+st.markdown("### Все отзывы")
+
+try:
+    response = requests.get(f"{API_URL}/reviews", timeout=10)
+
+    if response.status_code == 200:
+        reviews = response.json()
+
+        if not reviews:
+            st.write("Пока нет ни одного отзыва.Будьте первым!")
+
+        for review in reviews:
+            rating_value = review.get("rating", 0)
+            stars = "★" * rating_value + "☆" * (10 - rating_value)
+
+            st.markdown(
+                f"""
+                <div class="review-card">
+                    <div class="review-header">
+                        <span class="review-movie">{review.get("film_title", review.get("film_id", "—"))}</span>
+                        <span class="review-stars">{stars}</span>
                     </div>
-                    <span class="review-stars">{stars}</span>
-                    <p class="review-text">«{review["text"]}»</p>
+                    <p class="review-author">{review.get("author_email", "Аноним")}</p>
+                    <p class="review-text">{review.get("text", "")}</p>
                 </div>
                 """,
-                unsafe_allow_html=True
-                )
+                unsafe_allow_html=True,
+            )
+    else:
+        st.warning("Не удалось загрузить отзывы")
 
-        st.write("")
-        st.markdown('<hr class="section-divider">', unsafe_allow_html=True)
+except requests.exceptions.RequestException:
+    st.error("Не удалось подключиться к серверу")

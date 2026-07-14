@@ -36,11 +36,11 @@ if not cookies.ready():
     st.stop()
 
 
-# --- если уже есть токен — сразу в профиль ---
+# --- если уже есть токен — сразу на главную ---
 if cookies.get("access_token"):
     st.session_state["access_token"] = cookies.get("access_token")
     st.session_state["logged_in"] = True
-    st.switch_page("pages/Профиль.py")
+    st.switch_page("pages/Главная.py")
 
 
 
@@ -160,7 +160,7 @@ with st.container():
                             st.success(
                                 "Вход выполнен!"
                             )
-                            st.switch_page("pages/Профиль.py")
+                            st.switch_page("pages/Главная.py")
 
                         else:
                             st.error(

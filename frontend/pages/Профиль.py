@@ -48,7 +48,7 @@ if "access_token" not in st.session_state:
 if not st.session_state.get("logged_in") or not st.session_state.get("access_token"):
     st.warning("Пожалуйста, войдите в аккаунт")
     if st.button("Перейти к входу"):
-        st.switch_page("pages/login.py")
+        st.switch_page("pages/Вход.py")
     st.stop()
 
 
@@ -299,4 +299,4 @@ if not st.session_state["editing_profile"]:
             st.session_state.clear()
             cookies["access_token"] = ""
             cookies.save()
-            st.switch_page("pages/login.py")
+            st.switch_page("pages/Вход.py")
