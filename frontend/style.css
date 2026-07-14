@@ -977,3 +977,12 @@ div[data-testid="stButton"] button:focus {
     color: #dddddd;
     line-height: 1.5;
 }
+/* === Скрыть встроенное меню Streamlit в сайдбаре === */
+[data-testid="stSidebarNav"] {
+    display: none;
+}
+
+/* Если сайдбар совсем не нужен - скрыть целиком */
+[data-testid="stSidebar"] {
+    display: none;
+}
