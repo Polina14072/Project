@@ -1,42 +1,24 @@
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 from app.models.user import UserRole
 
 
 class UserCreate(BaseModel):
-    email: str = Field(min_length=3, max_length=255)
+    username: str = Field(min_length=3, max_length=50)
+    email: EmailStr
     password: str = Field(min_length=6, max_length=128)
-
-    @field_validator("email")
-    @classmethod
-    def normalize_email(cls, value: str) -> str:
-        email = value.strip().lower()
-
-        if "@" not in email:
-            raise ValueError("Email must contain @")
-
-        return email
 
 
 class UserLogin(BaseModel):
-    email: str = Field(min_length=3, max_length=255)
+    email: EmailStr
     password: str = Field(min_length=1, max_length=128)
-
-    @field_validator("email")
-    @classmethod
-    def normalize_email(cls, value: str) -> str:
-        email = value.strip().lower()
-
-        if "@" not in email:
-            raise ValueError("Email must contain @")
-
-        return email
 
 
 class UserResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
+    username: str
     email: str
     is_active: bool
     role: UserRole

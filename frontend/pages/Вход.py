@@ -1,6 +1,7 @@
 import streamlit as st
 import os
 import requests
+from dotenv import load_dotenv
 from streamlit_cookies_manager import EncryptedCookieManager
 
 
@@ -12,6 +13,9 @@ st.set_page_config(
 
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+ENV_PATH = os.path.abspath(os.path.join(BASE_DIR, "..", ".env"))
+
+load_dotenv(ENV_PATH)
 
 with open(
     os.path.join(BASE_DIR, "style.css"),
@@ -24,24 +28,74 @@ with open(
     )
 
 
-API_URL = "http://localhost:8000"  # замени на реальный адрес
+API_URL = "http://localhost:8000"
 
 
 # --- cookies ---
+COOKIE_SECRET = os.environ.get("COOKIE_SECRET")
+
+if not COOKIE_SECRET:
+    st.error("Не задан COOKIE_SECRET в переменных окружения")
+    st.code(
+        f"Искал .env по пути: {ENV_PATH}\n"
+        f"Файл существует: {os.path.exists(ENV_PATH)}"
+    )
+    st.stop()
+
 cookies = EncryptedCookieManager(
     prefix="films_app_",
-    password="замени_на_свой_секретный_ключ"
+    password=COOKIE_SECRET
 )
 if not cookies.ready():
     st.stop()
 
 
-# --- если уже есть токен — сразу на главную ---
-if cookies.get("access_token"):
-    st.session_state["access_token"] = cookies.get("access_token")
-    st.session_state["logged_in"] = True
-    st.switch_page("pages/Главная.py")
+def restore_session_from_cookie():
+    token = cookies.get("access_token")
 
+    if not token:
+        return
+
+    try:
+        me_response = requests.get(
+            f"{API_URL}/users/me",
+            headers={"Authorization": f"Bearer {token}"},
+            timeout=10,
+        )
+
+        if me_response.status_code == 200:
+            user_data = me_response.json()
+
+            st.session_state["access_token"] = token
+            st.session_state["logged_in"] = True
+            st.session_state["username"] = user_data.get("username")
+            st.session_state["email"] = user_data.get("email")
+
+            st.switch_page("pages/Главная.py")
+        else:
+            cookies["access_token"] = ""
+            cookies.save()
+
+    except requests.exceptions.RequestException:
+        pass
+
+
+restore_session_from_cookie()
+
+
+def extract_error_message(response) -> str:
+    try:
+        error_data = response.json()
+    except ValueError:
+        return f"Код ошибки: {response.status_code}"
+
+    detail = error_data.get("detail", "Неизвестная ошибка")
+
+    if isinstance(detail, list):
+        messages = [item.get("msg", str(item)) for item in detail]
+        return "; ".join(messages)
+
+    return detail
 
 
 # название сверху
@@ -54,7 +108,6 @@ FILMS
 """,
 unsafe_allow_html=True
 )
-
 
 
 # заголовок
@@ -77,11 +130,9 @@ unsafe_allow_html=True
 )
 
 
-
 # форма
 
 with st.container():
-
 
     st.markdown(
     """
@@ -90,17 +141,14 @@ with st.container():
     unsafe_allow_html=True
     )
 
-
     with st.form(
         "login"
     ):
-
 
         email = st.text_input(
             "Email",
             placeholder="Введите email"
         )
-
 
         password = st.text_input(
             "Пароль",
@@ -108,31 +156,21 @@ with st.container():
             type="password"
         )
 
-
         remember_me = st.checkbox(
             "Запомнить меня",
             value=True
         )
 
-
         login = st.form_submit_button(
             "Войти"
         )
 
-
-
         if login:
 
-
             if not email or not password:
-
-                st.error(
-                    "Заполните все поля"
-                )
-
+                st.error("Заполните все поля")
 
             else:
-
                 try:
                     response = requests.post(
                         f"{API_URL}/auth/login",
@@ -157,32 +195,22 @@ with st.container():
                                 cookies["access_token"] = token
                                 cookies.save()
 
-                            st.success(
-                                "Вход выполнен!"
-                            )
+                            st.success("Вход выполнен!")
                             st.switch_page("pages/Главная.py")
 
                         else:
-                            st.error(
-                                "Не удалось получить токен"
-                            )
+                            st.error("Не удалось получить токен")
 
                     elif response.status_code == 401:
-                        st.error(
-                            "Неверный email или пароль"
-                        )
+                        st.error("Неверный email или пароль")
 
                     else:
-                        error_detail = response.json().get("detail", "Неизвестная ошибка")
                         st.error(
-                            f"Ошибка входа: {error_detail}"
+                            f"Ошибка входа: {extract_error_message(response)}"
                         )
 
                 except requests.exceptions.RequestException:
-                    st.error(
-                        "Не удалось подключиться к серверу"
-                    )
-
+                    st.error("Не удалось подключиться к серверу")
 
     st.markdown(
     """
@@ -190,7 +218,6 @@ with st.container():
     """,
     unsafe_allow_html=True
     )
-
 
 
 # ссылка на регистрацию
@@ -203,9 +230,4 @@ st.markdown(
 """,
 unsafe_allow_html=True
 )
-
-col1, col2, col3 = st.columns([1, 1, 1])
-
-with col2:
-    if st.button("Перейти к регистрации", use_container_width=True):
-        st.switch_page("регистрация.py")
+ 

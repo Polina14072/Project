@@ -1,14 +1,6 @@
 from sqlalchemy.orm import Session
 
 from app.models.user import User
-from sqlalchemy.orm import (
-    Session,
-    contains_eager,
-    joinedload,
-)
-
-from app.models.profile import Profile
-
 
 
 class UserRepository:
@@ -22,17 +14,24 @@ class UserRepository:
     def get_all(self) -> list[User]:
         return self.db.query(User).all()
 
-    def get_by_id(self, user_id: int):
+    def get_by_id(self, user_id: int) -> User | None:
         return (
             self.db.query(User)
             .filter(User.id == user_id)
             .first()
         )
 
-    def get_by_email(self, email: str):
+    def get_by_email(self, email: str) -> User | None:
         return (
             self.db.query(User)
             .filter(User.email == email)
+            .first()
+        )
+
+    def get_by_username(self, username: str) -> User | None:
+        return (
+            self.db.query(User)
+            .filter(User.username == username)
             .first()
         )
 
@@ -45,6 +44,5 @@ class UserRepository:
         self.db.refresh(user)
 
         return user
-
 
 

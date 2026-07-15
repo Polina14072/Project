@@ -131,7 +131,7 @@ try:
         reviews = response.json()
 
         if not reviews:
-            st.write("Пока нет ни одного отзыва.Будьте первым!")
+            st.write("Пока нет ни одного отзыва. Будьте первым!")
 
         for review in reviews:
             rating_value = review.get("rating", 0)

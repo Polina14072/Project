@@ -1,7 +1,9 @@
 from fastapi import APIRouter, Depends, status
 from sqlalchemy.orm import Session
 
+from app.auth import get_current_user
 from app.database import get_db
+from app.models.user import User
 from app.schemas.review import ReviewCreate, ReviewResponse, ReviewUpdate
 from app.services.review_service import ReviewService
 
@@ -22,11 +24,12 @@ def get_review_service(
     response_model=ReviewResponse,
     status_code=status.HTTP_201_CREATED,
 )
-def create_book(
+def create_review(
     schema: ReviewCreate,
+    current_user: User = Depends(get_current_user),
     service: ReviewService = Depends(get_review_service),
 ):
-    return service.create_review(schema)
+    return service.create_review(schema, current_user.id)
 
 
 @router.get(
@@ -40,18 +43,18 @@ def get_reviews(
 
 
 @router.get(
-    "/{book_id}",
+    "/{review_id}",
     response_model=ReviewResponse,
 )
 def get_review(
-    book_id: int,
+    review_id: int,
     service: ReviewService = Depends(get_review_service),
 ):
     return service.get_review(review_id)
 
 
 @router.patch(
-    "/{book_id}",
+    "/{review_id}",
     response_model=ReviewResponse,
 )
 def update_review(

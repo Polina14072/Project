@@ -13,19 +13,28 @@ class UserService:
         self.repository = UserRepository(db)
 
     def create_user(self, schema: UserCreate) -> User:
-        existing_user = self.repository.get_by_email(schema.email)
+        existing_email = self.repository.get_by_email(schema.email)
 
-        if existing_user is not None:
+        if existing_email is not None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
                 detail="User with this email already exists",
             )
 
+        existing_username = self.repository.get_by_username(schema.username)
+
+        if existing_username is not None:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="This username is already taken",
+            )
+
         user = User(
+            username=schema.username,
             email=schema.email,
             hashed_password=hash_password(schema.password),
             is_active=True,
-            role=UserRole.USER.value,
+            role=UserRole.USER,
         )
 
         return self.repository.create(user)

@@ -11,11 +11,11 @@ class ReviewService:
     def __init__(self, db: Session):
         self.repository = ReviewRepository(db)
 
-    def create_review(self, schema: ReviewCreate) -> Review:
+    def create_review(self, schema: ReviewCreate, user_id: int) -> Review:
         review = Review(
-            title=schema.title,
-            author=schema.author,
-            decription=schema.description,
+            text=schema.text,
+            film_id=schema.film_id,
+            user_id=user_id,
         )
 
         return self.repository.create(review)
@@ -36,26 +36,18 @@ class ReviewService:
 
     def update_review(
         self,
-        book_id: int,
+        review_id: int,
         schema: ReviewUpdate,
     ) -> Review:
-
         review = self.get_review(review_id)
 
-        if schema.title is None and schema.author is None and schema.description is None:
+        if schema.text is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="At least one field must be provided",
+                detail="Text must be provided",
             )
 
-        if schema.title is not None:
-            review.title = schema.title
-
-        if schema.author is not None:
-            review.author = schema.author
-        
-        if schema.description is not None:
-            review.description = schema.description
+        review.text = schema.text
 
         return self.repository.update(review)
 
