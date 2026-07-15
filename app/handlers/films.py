@@ -33,10 +33,10 @@ def create_film(
     "/",
     response_model=list[FilmResponse],
 )
-def get_film(
+def get_films(
     service: FilmService = Depends(get_film_service),
 ):
-    return service.get_film()
+    return service.get_films()
 
 
 @router.get(

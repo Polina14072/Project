@@ -10,9 +10,10 @@ def load_css(base_dir: str, css_relative_path: str):
 
 
 def render_nav(current_page: str = ""):
-    """Горизонтальное меню навигации без фона.
-    При наведении ссылка приподнимается и становится красной.
-    current_page — название текущей страницы (для подсветки активного пункта)"""
+    """Горизонтальное меню навигации.
+    Последняя кнопка выделена (с фоном):
+    - 'Регистрация', если пользователь не залогинен
+    - 'Профиль', если пользователь уже вошёл в аккаунт"""
 
     pages = [
         ("Главная", "pages/Главная.py"),
@@ -21,12 +22,21 @@ def render_nav(current_page: str = ""):
         ("Топ", "pages/Топ.py"),
     ]
 
-    st.markdown("<div class='nav-wrapper'>", unsafe_allow_html=True)
-    cols = st.columns(len(pages))
+    is_logged_in = st.session_state.get("logged_in", False)
 
-    for col, (label, path) in zip(cols, pages):
+    st.markdown("<div class='nav-wrapper'>", unsafe_allow_html=True)
+
+    cols = st.columns(len(pages) + 1)
+
+    for col, (label, path) in zip(cols[:-1], pages):
         with col:
             st.page_link(path, label=label)
+
+    with cols[-1]:
+        if is_logged_in:
+            st.page_link("pages/Профиль.py", label="Профиль")
+        else:
+            st.page_link("pages/Вход.py", label="Регистрация")
 
     st.markdown("</div>", unsafe_allow_html=True)
 

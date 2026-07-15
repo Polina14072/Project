@@ -28,6 +28,14 @@ class FilmRepository:
         self,
         film_id: int,
     ) -> Film | None:
+       return self.db.get(Film, film_id)
+
+    def get_by_title(self, title: str) -> Film | None:
+        return(
+            self.db.query(Film)
+            .filter(Film.title == title)
+            .first()
+        )
 
         return (
             self.db.query(Film)

@@ -208,4 +208,4 @@ col1, col2, col3 = st.columns([1, 1, 1])
 
 with col2:
     if st.button("Перейти к регистрации", use_container_width=True):
-        st.switch_page("app.py")
+        st.switch_page("регистрация.py")

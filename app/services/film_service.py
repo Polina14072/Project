@@ -19,10 +19,13 @@ class FilmService:
 
         return self.repository.create(film)
 
-    def get_books(self) -> list[Film]:
+    def get_films(self) -> list[Film]:
         return self.repository.get_all()
+        
+    def get_by_title(self, title: str) -> Film | None:
+        return self.repository.get_by_title(title)
 
-    def get_book(self, film_id: int) -> Film:
+    def get_film(self, film_id: int) -> Film:
         film = self.repository.get_by_id(film_id)
 
         if film is None:
@@ -48,14 +51,14 @@ class FilmService:
             )
 
         if schema.title is not None:
-            folm.title = schema.title
+            film.title = schema.title
 
         if schema.director is not None:
             film.director = schema.director
 
-        return self.repository.update(director)
+        return self.repository.update(film)
 
-    def delete_director(self, director_id: int) -> None:
-        director = self.get_director(director_id)
+    def delete_film(self, film_id: int) -> None:
+        film = self.get_film(film_id)
 
-        self.repository.delete(director)
+        self.repository.delete(film)

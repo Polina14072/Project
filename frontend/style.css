@@ -986,3 +986,46 @@ div[data-testid="stButton"] button:focus {
 [data-testid="stSidebar"] {
     display: none;
 }
+.nav-wrapper {
+    padding: 1.5rem 0;
+}
+
+[data-testid="stPageLink"] {
+    justify-content: center;
+    background: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+[data-testid="stPageLink"] p {
+    color: white !important;
+    font-size: 1rem !important;
+    font-weight: 400;
+    transition: transform 0.2s ease, color 0.2s ease;
+}
+
+[data-testid="stPageLink"]:hover p {
+    color: #ff4b4b !important;
+    transform: translateY(-4px);
+}
+
+.nav-wrapper [data-testid="stPageLink"]:last-of-type {
+    background-color: #ff4b4b !important;
+    border-radius: 20px !important;
+    padding: 0.4rem 1.2rem !important;
+}
+
+.nav-wrapper [data-testid="stPageLink"]:last-of-type p {
+    color: white !important;
+    font-weight: 600;
+}
+
+.nav-wrapper [data-testid="stPageLink"]:last-of-type:hover {
+    background-color: #e63e3e !important;
+    transform: none;
+}
+
+.nav-wrapper [data-testid="stPageLink"]:last-of-type:hover p {
+    color: white !important;
+    transform: none;
+}

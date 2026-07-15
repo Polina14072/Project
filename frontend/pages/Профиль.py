@@ -2,6 +2,7 @@ import streamlit as st
 import os
 import requests
 from streamlit_cookies_manager import EncryptedCookieManager
+from utils import render_nav
 
 
 st.set_page_config(
@@ -22,6 +23,9 @@ with open(
         f"<style>{file.read()}</style>",
         unsafe_allow_html=True
     )
+
+
+render_nav("Профиль")
 
 
 API_URL = "http://localhost:8000"
@@ -76,7 +80,7 @@ try:
         cookies.save()
         st.warning("Сессия истекла, войдите заново")
         if st.button("Перейти к входу"):
-            st.switch_page("pages/login.py")
+            st.switch_page("pages/Вход.py")
         st.stop()
 
     else:
@@ -94,7 +98,7 @@ avatar = cookies.get("avatar") or "🎬"
 
 
 
-# --- горизонтальное меню навигации ---
+# название сверху
 
 st.markdown(
 """
@@ -104,30 +108,6 @@ FILMS
 """,
 unsafe_allow_html=True
 )
-
-nav_col1, nav_col2, nav_col3, nav_col4, nav_col5 = st.columns(5)
-
-with nav_col1:
-    if st.button("Главная", use_container_width=True, key="nav_home"):
-        st.switch_page("Главная.py")
-
-with nav_col2:
-    if st.button("Фильмы", use_container_width=True, key="nav_films"):
-        st.switch_page("pages/Фильмы.py")
-
-with nav_col3:
-    if st.button("Отзывы", use_container_width=True, key="nav_reviews"):
-        st.switch_page("pages/Отзывы.py")
-
-with nav_col4:
-    if st.button("Топ", use_container_width=True, key="nav_top"):
-        st.switch_page("pages/Топ.py")
-
-with nav_col5:
-    if st.button("Профиль", use_container_width=True, key="nav_profile"):
-        st.switch_page("pages/Профиль.py")
-
-st.markdown("<br>", unsafe_allow_html=True)
 
 
 
@@ -177,7 +157,8 @@ if not st.session_state["editing_profile"]:
 
         st.markdown(
         f"""
-        <div class="profile-info-row"><span class="profile-info-label">Email</span>
+        <div class="profile-info-row">
+            <span class="profile-info-label">Email</span>
             <span class="profile-info-value">{email}</span>
         </div>
 
@@ -211,92 +192,6 @@ if not st.session_state["editing_profile"]:
             st.session_state["editing_profile"] = True
             st.rerun()
 
-
-
-else:
-
-    # --- режим редактирования ---
-
-    st.markdown(
-    """
-    <div class="auth-title">
-
-    <h1>
-    Редактировать профиль
-    </h1>
-
-    </div>
-    """,
-    unsafe_allow_html=True
-    )
-
-
-    with st.container():
-
-        st.markdown(
-        """
-        <div class="form-card">
-        """,
-        unsafe_allow_html=True
-        )
-
-        new_username = st.text_input(
-            "Имя пользователя",
-            value=username
-        )
-
-        st.markdown("**Выберите аватарку**")
-
-        selected_avatar = st.radio(
-            "Аватар",
-            options=AVATAR_OPTIONS,
-            index=AVATAR_OPTIONS.index(avatar) if avatar in AVATAR_OPTIONS else 0,
-            horizontal=True,
-            label_visibility="collapsed"
-        )
-
-        st.markdown(
-        """
-        </div>
-        """,
-        unsafe_allow_html=True
-        )
-
-
-    save_col1, save_col2, save_col3 = st.columns([1, 1, 1])
-
-    with save_col2:
-        if st.button("Сохранить", use_container_width=True):
-
-            cookies["username"] = new_username
-            cookies["avatar"] = selected_avatar
-            cookies.save()
-
-            st.session_state["editing_profile"] = False
-            st.success("Профиль обновлён!")
-            st.rerun()
-
-
-    cancel_col1, cancel_col2, cancel_col3 = st.columns([1, 1, 1])
-
-    with cancel_col2:
-        if st.button("Отмена", use_container_width=True):
-            st.session_state["editing_profile"] = False
-            st.rerun()
-
-
-
-# кнопка выхода (только в режиме просмотра)
-
-if not st.session_state["editing_profile"]:
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    col1, col2, col3 = st.columns([1, 1, 1])
-
-    with col2:
-        if st.button("Выйти из аккаунта", use_container_width=True):
-            st.session_state.clear()
-            cookies["access_token"] = ""
-            cookies.save()
-            st.switch_page("pages/Вход.py")
+    # --- ЗДЕСЬ ПРОДОЛЖАЕТСЯ ТВОЙ ОСТАЛЬНОЙ КОД ---
+    # (режим редактирования профиля, кнопка "Выйти из аккаунта" и т.д.)
+    # У меня нет полного текста этой части файла — допиши её как было

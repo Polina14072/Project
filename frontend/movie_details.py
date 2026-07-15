@@ -23,7 +23,7 @@ def load_css():
 
 def show_movie_details(movie_key: str):
     load_css()
-    
+
 
     back_col, spacer = st.columns([1, 5])
     with back_col:

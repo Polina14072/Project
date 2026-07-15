@@ -39,7 +39,7 @@ st.markdown("<div class='movie-spacer'></div>", unsafe_allow_html=True)
 # --- Получаем список фильмов с backend (для выбора film_id) ---
 films_by_title = {}
 try:
-    films_response = requests.get(f"{API_URL}/films", timeout=10)
+    films_response = requests.get(f"{API_URL}/films/", timeout=10)
     if films_response.status_code == 200:
         films_list = films_response.json()
         films_by_title = {film["title"]: film["id"] for film in films_list}
@@ -94,9 +94,9 @@ else:
 
                     try:
                         response = requests.post(
-                            f"{API_URL}/reviews",
+                            f"{API_URL}/reviews/",
                             json={
-                                "film_id": film_id,
+                                "film_id": str(film_id),
                                 "rating": rating,
                                 "text": text,
                             },
@@ -125,7 +125,7 @@ st.markdown("<div class='movie-spacer'></div>", unsafe_allow_html=True)
 st.markdown("### Все отзывы")
 
 try:
-    response = requests.get(f"{API_URL}/reviews", timeout=10)
+    response = requests.get(f"{API_URL}/reviews/", timeout=10)
 
     if response.status_code == 200:
         reviews = response.json()
