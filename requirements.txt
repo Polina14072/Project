@@ -64,3 +64,4 @@ urllib3==2.7.0
 uvicorn==0.50.2
 websockets==16.1
 pydantic[email]
+python-dotenv
