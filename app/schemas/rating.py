@@ -2,18 +2,18 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class RatingCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=200)
-    author: str = Field(min_length=1, max_length=200)
+    score: int = Field(ge=1, le=10)
+    film_id: int
 
 
 class RatingUpdate(BaseModel):
-    title: str | None = Field(default=None, min_length=1, max_length=200)
-    author: str | None = Field(default=None, min_length=1, max_length=200)
+    score: int | None = Field(default=None, ge=1, le=10)
 
 
 class RatingResponse(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
     id: int
-    title: str
-    author: str
+    score: int
+    user_id: int
+    film_id: int

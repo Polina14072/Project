@@ -1029,3 +1029,15 @@ div[data-testid="stButton"] button:focus {
     color: white !important;
     transform: none;
 }
+.top-nav-links a {
+    color: rgba(255, 255, 255, 0.85);
+    text-decoration: none;
+    font-size: 17px;
+    font-weight: 500;
+    margin-left: 48px;
+    transition: color 0.2s ease;
+}
+
+.top-nav-links a:hover {
+    color: #ffffff;
+}

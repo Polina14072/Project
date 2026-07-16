@@ -11,10 +11,19 @@ class RatingService:
     def __init__(self, db: Session):
         self.repository = RatingRepository(db)
 
-    def create_rating(self, schema: RatingCreate) -> Rating:
+    def create_rating(self, schema: RatingCreate, user_id: int) -> Rating:
+        existing = self.repository.get_by_user_and_film(user_id, schema.film_id)
+
+        if existing is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="You have already rated this film",
+            )
+
         rating = Rating(
-            title=schema.title,
-            author=schema.author,
+            score=schema.score,
+            film_id=schema.film_id,
+            user_id=user_id,
         )
 
         return self.repository.create(rating)
@@ -33,25 +42,16 @@ class RatingService:
 
         return rating
 
-    def update_rating(
-        self,
-        rating_id: int,
-        schema: RatingUpdate,
-    ) -> Rating:
-
+    def update_rating(self, rating_id: int, schema: RatingUpdate) -> Rating:
         rating = self.get_rating(rating_id)
 
-        if schema.title is None and schema.author is None:
+        if schema.score is None:
             raise HTTPException(
                 status_code=status.HTTP_400_BAD_REQUEST,
-                detail="At least one field must be provided",
+                detail="Score must be provided",
             )
 
-        if schema.title is not None:
-            rating.title = schema.title
-
-        if schema.author is not None:
-            rating.author = schema.author
+        rating.score = schema.score
 
         return self.repository.update(rating)
 

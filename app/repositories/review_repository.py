@@ -9,7 +9,7 @@ class ReviewRepository:
         self.db = db
 
     def create(self, review: Review) -> Review:
-        return self._upsert(Review)
+        return self._upsert(review)
 
     def update(self, review: Review) -> Review:
         return self._upsert(review)
@@ -17,7 +17,7 @@ class ReviewRepository:
     def _upsert(self, review: Review) -> Review:
         self.db.add(review)
         self.db.commit()
-        self.db.refresh(rview)
+        self.db.refresh(review)
 
         return review
 
@@ -28,7 +28,6 @@ class ReviewRepository:
         self,
         review_id: int,
     ) -> Review | None:
-
         return (
             self.db.query(Review)
             .filter(Review.id == review_id)

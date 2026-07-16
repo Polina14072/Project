@@ -2,15 +2,12 @@ from pydantic import BaseModel, ConfigDict, Field
 
 
 class ReviewCreate(BaseModel):
-    text: str = Field(min_length=1, max_length=200)
-    film_id: str = Field(min_length=1, max_length=200)
-    
+    text: str = Field(min_length=1, max_length=2000)
+    film_id: int
 
 
 class ReviewUpdate(BaseModel):
-    text: str | None = Field(default=None, min_length=1, max_length=200)
-    film_id: str | None = Field(default=None, min_length=1, max_length=200)
-    
+    text: str | None = Field(default=None, min_length=1, max_length=2000)
 
 
 class ReviewResponse(BaseModel):
@@ -18,4 +15,5 @@ class ReviewResponse(BaseModel):
 
     id: int
     text: str
+    user_id: int
     film_id: int
