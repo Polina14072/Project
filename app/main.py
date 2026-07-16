@@ -25,7 +25,6 @@ app = FastAPI(
 )
 
 
-
 app.include_router(films_router)
 app.include_router(reviews_router)
 app.include_router(auth_router)

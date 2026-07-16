@@ -37,14 +37,12 @@ st.markdown("<div class='movie-spacer'></div>", unsafe_allow_html=True)
 
 
 # --- Получаем список фильмов с backend (для выбора film_id) ---
-films_by_title = {}
-try:
-    films_response = requests.get(f"{API_URL}/films/", timeout=10)
-    if films_response.status_code == 200:
-        films_list = films_response.json()
-        films_by_title = {film["title"]: film["id"] for film in films_list}
-except requests.exceptions.RequestException:
-    pass
+films_response = requests.get(f"{API_URL}/films/", timeout=10)
+print("*" * 30)
+print(films_response.json())
+if films_response.status_code == 200:
+    films_list = films_response.json()
+    films_by_title = {film["title"]: film["id"] for film in films_list}
 
 
 # --- Форма добавления отзыва ---
