@@ -1,15 +1,10 @@
 import streamlit as st
 import os
 import requests
-from dotenv import load_dotenv
 from streamlit_cookies_manager import EncryptedCookieManager
 
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-ENV_PATH = os.path.join(BASE_DIR, "..", ".env")
-ENV_PATH = os.path.abspath(ENV_PATH)
-
-load_dotenv(ENV_PATH)
 
 
 st.set_page_config(
@@ -35,14 +30,10 @@ API_URL = "http://localhost:8000"
 
 
 # --- cookies для "запомнить меня" ---
-COOKIE_SECRET = os.environ.get("COOKIE_SECRET")
+COOKIE_SECRET = st.secrets.get("COOKIE_SECRET")
 
 if not COOKIE_SECRET:
-    st.error("Не задан COOKIE_SECRET в переменных окружения")
-    st.code(
-        f"Искал .env по пути: {ENV_PATH}\n"
-        f"Файл существует: {os.path.exists(ENV_PATH)}"
-    )
+    st.error("Не задан COOKIE_SECRET в secrets.toml")
     st.stop()
 
 cookies = EncryptedCookieManager(
@@ -104,66 +95,59 @@ def extract_error_message(response) -> str:
 # название сверху
 
 st.markdown(
-"""
-<div class="small-logo">
-FILMS
-</div>
-""",
-unsafe_allow_html=True
+    """
+    <div class="small-logo">
+    FILMS
+    </div>
+    """,
+    unsafe_allow_html=True
 )
-
 
 
 # центральный заголовок
 
 st.markdown(
-"""
-<div class="auth-title">
+    """
+    <div class="auth-title">
 
-<h1>
-Создайте аккаунт
-</h1>
+    <h1>
+    Создайте аккаунт
+    </h1>
 
-<p>
-Присоединяйтесь к миру кино
-</p>
+    <p>
+    Присоединяйтесь к миру кино
+    </p>
 
-</div>
-""",
-unsafe_allow_html=True
+    </div>
+    """,
+    unsafe_allow_html=True
 )
-
 
 
 # форма
 
 with st.container():
 
-
     st.markdown(
-    """
-    <div class="form-card">
-    """,
-    unsafe_allow_html=True
+        """
+        <div class="form-card">
+        """,
+        unsafe_allow_html=True
     )
-
 
     with st.form(
         "register"
     ):
-
 
         username = st.text_input(
             "Имя пользователя",
             placeholder="Введите имя"
         )
 
-
         email = st.text_input(
             "Email",
             placeholder="Введите email"
         )
-
 
         password = st.text_input(
             "Пароль",
@@ -171,28 +155,22 @@ with st.container():
             type="password"
         )
 
-
         confirm_password = st.text_input(
             "Подтвердите пароль",
             placeholder="Повторите пароль",
             type="password"
         )
 
-
         remember_me = st.checkbox(
             "Запомнить меня",
             value=True
         )
 
-
         register = st.form_submit_button(
             "Создать аккаунт"
         )
 
-
-
         if register:
-
 
             if not username or not email or not password:
 
@@ -200,13 +178,11 @@ with st.container():
                     "Заполните все поля"
                 )
 
-
             elif password != confirm_password:
 
                 st.error(
                     "Пароли не совпадают"
                 )
-
 
             else:
 
@@ -272,25 +248,23 @@ with st.container():
                         "Не удалось подключиться к серверу"
                     )
 
-
     st.markdown(
-    """
-    </div>
-    """,
-    unsafe_allow_html=True
+        """
+        </div>
+        """,
+        unsafe_allow_html=True
     )
-
 
 
 # ссылка на вход
 
 st.markdown(
-"""
-<div class="login-link">
-Уже есть аккаунт?
-</div>
-""",
-unsafe_allow_html=True
+    """
+    <div class="login-link">
+    Уже есть аккаунт?
+    </div>
+    """,
+    unsafe_allow_html=True
 )
 
 col1, col2, col3 = st.columns([1, 1, 1])
