@@ -1,7 +1,8 @@
 import requests
 import json
+from streamlit import secrets
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = secrets.BACKEND_URL
 
 LOGIN_ENDPOINT = f"{BACKEND_URL}/auth/login/"
 REGISTER_ENDPOINT = f"{BACKEND_URL}/auth/register/"
